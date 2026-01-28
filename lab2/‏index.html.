@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>لعبة XO</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: "Cairo", Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1d2671, #c33764);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .mode-select {
+            margin: 15px 0;
+        }
+
+        select, button {
+            padding: 10px 15px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            cursor: pointer;
+        }
+
+        select {
+            margin-left: 10px;
+        }
+
+        button {
+            background: #00e0ff;
+            color: #000;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #00bcd4;
+        }
+
+        .game {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .cell {
+            background: rgba(255,255,255,0.15);
+            border-radius: 15px;
+            font-size: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .cell:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .status {
+            margin: 10px 0;
+            font-size: 18px;
+            min-height: 24px;
+        }
+
+        footer {
+            margin-top: auto;
+            width: 100%;
+            text-align: center;
+            padding: 12px;
+            background: rgba(0,0,0,0.25);
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🎮 لعبة XO</h1>
+
+    <div class="mode-select">
+        <label>وضع اللعب:</label>
+        <select id="mode">
+            <option value="single">لاعب واحد (ضد الكمبيوتر)</option>
+            <option value="two">لاعبان</option>
+        </select>
+        <button onclick="startGame()">بدء / إعادة</button>
+    </div>
+
+    <div class="status" id="status"></div>
+
+    <div class="game" id="board"></div>
+
+    <footer>
+        Student Name: Abdullah Aziz Al-Otaibi |
+        ID: 446000451 |
+        Supervised by: Mohammed Jabali
+    </footer>
+
+    <script>
+        const boardElement = document.getElementById("board");
+        const statusElement = document.getElementById("status");
+        const modeSelect = document.getElementById("mode");
+
+        let board = [];
+        let currentPlayer = "X";
+        let gameOver = false;
+        let mode = "single";
+
+        const winPatterns = [
+            [0,1,2],[3,4,5],[6,7,8],
+            [0,3,6],[1,4,7],[2,5,8],
+            [0,4,8],[2,4,6]
+        ];
+
+        function startGame() {
+            board = Array(9).fill("");
+            currentPlayer = "X";
+            gameOver = false;
+            mode = modeSelect.value;
+            statusElement.textContent = "دور اللاعب: X";
+            renderBoard();
+        }
+
+        function renderBoard() {
+            boardElement.innerHTML = "";
+            board.forEach((cell, index) => {
+                const div = document.createElement("div");
+                div.className = "cell";
+                div.textContent = cell;
+                div.onclick = () => handleMove(index);
+                boardElement.appendChild(div);
+            });
+        }
+
+        function handleMove(index) {
+            if (board[index] !== "" || gameOver) return;
+
+            board[index] = currentPlayer;
+            renderBoard();
+
+            if (checkWin(currentPlayer)) {
+                statusElement.textContent = `🎉 الفائز هو: ${currentPlayer}`;
+                gameOver = true;
+                return;
+            }
+
+            if (board.every(c => c !== "")) {
+                statusElement.textContent = "🤝 تعادل!";
+                gameOver = true;
+                return;
+            }
+
+            currentPlayer = currentPlayer === "X" ? "O" : "X";
+            statusElement.textContent = `دور اللاعب: ${currentPlayer}`;
+
+            if (mode === "single" && currentPlayer === "O") {
+                setTimeout(computerMove, 500);
+            }
+        }
+
+        function computerMove() {
+            let emptyCells = board
+                .map((v, i) => v === "" ? i : null)
+                .filter(v => v !== null);
+
+            let move = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+            handleMove(move);
+        }
+
+        function checkWin(player) {
+            return winPatterns.some(pattern =>
+                pattern.every(index => board[index] === player)
+            );
+        }
+
+        startGame();
+    </script>
+
+</body>
+</html>
